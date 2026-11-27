@@ -13,6 +13,24 @@ class RefundWithinThirtyDays(unittest.TestCase):
     def test_allows_one_cent(self):
         self.assertEqual(partial_refund(10000, 9999, 1, 29), 1)
 
+    def test_allows_day_thirty(self):
+        self.assertEqual(partial_refund(10000, 0, 4000, 30), 4000)
+
+
+class RefundAfterThirtyDays(unittest.TestCase):
+    def assertExpired(self, *args):
+        with self.assertRaisesRegex(ValueError, "Refund period expired"):
+            partial_refund(*args)
+
+    def test_refuses_day_thirty_one(self):
+        self.assertExpired(10000, 0, 4000, 31)
+
+    def test_refuses_day_forty_five(self):
+        self.assertExpired(10000, 0, 4000, 45)
+
+    def test_refuses_late_request_even_with_invalid_amount(self):
+        self.assertExpired(10000, 0, 0, 31)
+
 
 class InvalidAmount(unittest.TestCase):
     def assertInvalid(self, *args):
