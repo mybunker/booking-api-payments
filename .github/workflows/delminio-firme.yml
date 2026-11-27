@@ -1,0 +1,28 @@
+# Delminio change sign-off: each pull request checks the sign-offs of its branch, each push to the main branch that nothing got in without them. Written by “delminio signoffs ci”; the key lives in the service's secrets, named DELMINIO_FIRME.
+name: delminio-firme
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  controlla:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: delminio-firme
+        env:
+          DELMINIO_URL: https://app.delminio.com
+          DELMINIO_FIRME_REPO: "https://github.com/mybunker/booking-api-payments.git"
+          DELMINIO_TOKEN: ${{ secrets.DELMINIO_FIRME }}
+          BASE: ${{ github.base_ref }}
+          PRIMA: ${{ github.event.before }}
+        run: |
+          curl -fsS -H "Authorization: Bearer $DELMINIO_TOKEN" "$DELMINIO_URL/static/kit/signoff-client" -o "$RUNNER_TEMP/signoff.py"
+          if [ -n "$BASE" ]; then
+            python3 "$RUNNER_TEMP/signoff.py" controlla "origin/$BASE..HEAD"
+          else
+            case "$PRIMA" in ""|0000000000000000000000000000000000000000) PRIMA=HEAD~1 ;; esac
+            python3 "$RUNNER_TEMP/signoff.py" controlla "$PRIMA..HEAD"
+          fi
