@@ -1,4 +1,4 @@
-REFUND_PERIOD_DAYS = 30
+REFUND_PERIOD_DAYS = 45
 
 
 def partial_refund(total_cents, refunded_cents, requested_cents, days_since_payment):
